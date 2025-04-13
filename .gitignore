@@ -4,5 +4,4 @@ target
 .env
 client/ios/App/ios-libs
 nodes/
-node/
 
