@@ -1,0 +1,3 @@
+**/target/
+
+communication-hub/src/db/schema.rs.orig

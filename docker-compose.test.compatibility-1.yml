@@ -1,0 +1,20 @@
+version: "3.7"
+
+x-default-node: &default-node
+  image: ghcr.io/gridlocknetwork/mvp/app:master
+
+services:
+  node2:
+    <<: *default-node
+
+  node3:
+    <<: *default-node
+
+  node4:
+    <<: *default-node
+
+  node5:
+    <<: *default-node
+
+  node6:
+    <<: *default-node

@@ -1,0 +1,126 @@
+on: [pull_request]
+
+name: Continuous Integration
+
+jobs:
+  check:
+    name: Cargo check
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('Cargo.lock') }}
+      - name: Check backend
+        uses: dtolnay/rust-toolchain@stable
+      - run: cargo check --locked
+
+  test:
+    name: Test suite
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('Cargo.lock') }}
+      - name: Test backend
+        uses: dtolnay/rust-toolchain@stable
+      - run: cargo test --locked --package node
+
+  int_test:
+    name: Integration test suite
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('Cargo.lock') }}
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          target: x86_64-unknown-linux-musl
+      - name: Build server-node
+        run: cargo build --bin guardian-node
+      - name: Build test-node
+        run: |
+          cargo test --lib -p test --no-run
+          find ./target/debug/deps/ -regex '.*test-[0-9a-z]*$' | xargs -t -I % mv % ./target/debug/test
+      - name: Build key-info service
+        run: cargo build --bin key-info
+
+      - name: Build dev-node docker image
+        run: docker build -t node --build-arg BIN=guardian-node .
+      - name: Build test-node docker image
+        run: docker build -t test-node --build-arg BIN=test .
+      - name: Build key-info docker image
+        run: docker build -t key-info --build-arg BIN=key-info .
+
+      - name: Run integration tests
+        run: .github/scripts/integration-test.sh
+
+      - name: Run compatibility tests
+        # We need docker credentials to pull current release image to test compatibility
+        env:
+          DOCKER_USERNAME: gridlocknetwork
+          DOCKER_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          source .github/scripts/node-version-env.sh
+          docker login ghcr.io -u "$DOCKER_USERNAME" --password "$DOCKER_PASSWORD"
+          docker pull ghcr.io/gridlocknetwork/mvp/app:master
+          .github/scripts/compatibility-test.sh
+
+  fmt:
+    name: Rustfmt
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('Cargo.lock') }}
+      - name: Format backend
+        uses: dtolnay/rust-toolchain@stable
+      - run: cargo fmt --all -- --check
+
+  user-node:
+    name: Mobile platform guardian
+    uses: ./.github/workflows/mobile-build.yml
+#  TODO: Enforce clippy in future
+#  clippy:
+#    name: Clippy
+#    runs-on: ubuntu-22.04
+#    steps:
+#      - uses: actions/checkout@v2
+#      - uses: actions-rs/toolchain@v1
+#        with:
+#          profile: minimal
+#          toolchain: stable
+#          override: true
+#      - run: rustup component add clippy
+#      - uses: actions-rs/cargo@v1
+#        with:
+#          command: clippy
+#          args: -- -D warnings

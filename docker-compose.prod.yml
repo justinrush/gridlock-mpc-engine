@@ -1,0 +1,34 @@
+version: "3.7"
+
+x-default-node: &default-node
+  image: ghcr.io/gridlocknetwork/mvp/app:$BRANCH
+
+services:
+  node1:
+    <<: *default-node
+
+  node2:
+    <<: *default-node
+
+  node3:
+    <<: *default-node
+
+  node4:
+    <<: *default-node
+
+  node5:
+    <<: *default-node
+
+  node6:
+    <<: *default-node
+
+  message-logging:
+    restart: always
+    volumes:
+      - "$STORAGE_DIR/message-logging/:/var/log/gridlock"
+    depends_on:
+      - nats
+    image: ghcr.io/gridlocknetwork/message-logging:$BRANCH
+    environment:
+      - AWS_ACCESS_KEY_ID
+      - AWS_SECRET_ACCESS_KEY

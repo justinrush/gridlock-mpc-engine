@@ -1,0 +1,24 @@
+{
+  "d69f2ef3-cde5-47dd-8f82-e8014a4a757d": {
+    "key_type": "EdDSA",
+    "public_key": "ee092fc37b4da7a632fc087f3c2e894083a7599118d861b6e81cfc46254d3042",
+    "node_to_share_indices": [
+      [1, 1],
+      [2, 2],
+      [3, 3],
+      [4, 4],
+      [5, 5]
+    ]
+  },
+  "a4f10ed0-6084-4597-a0d8-8942b89b6a48": {
+    "key_type": "ECDSA",
+    "public_key": "50498a174b5034ceb3e732918fd5ef39c6600c4464d34ab6e31bff40ed0e26b4a89b458737a454912c59b3be30e7c275f5b282c752e7f8a55c5ba652d04ad47",
+    "node_to_share_indices": [
+      [4, 1],
+      [1, 2],
+      [2, 3],
+      [5, 4],
+      [3, 5]
+    ]
+  }
+}

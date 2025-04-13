@@ -1,0 +1,9 @@
+[
+  {
+    "id": "redeploy-$WEBHOOK_SECRET",
+    "execute-command": "/redeploy.sh",
+    "command-working-directory": "/app",
+    "include-command-output-in-response": true,
+    "include-command-output-in-response-on-error": true
+  }
+]

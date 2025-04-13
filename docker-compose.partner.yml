@@ -1,0 +1,21 @@
+# set $STORAGE_DIR env variable to path
+# to directory for nodes keys storage.
+# Node will be mounted on to it.
+version: "3.7"
+x-default-node: &default-node
+  restart: always
+  image: ghcr.io/gridlocknetwork/mvp/partner-node:latest
+  environment:
+    NODE_DB: /var/lib/gridlock/node/node.db
+    NATS_ADDRESS: $NATS_ADDRESS
+
+services:
+  node7:
+    <<: *default-node
+    volumes:
+      - "$STORAGE_DIR/nodes/7/:/var/lib/gridlock/node"
+
+  node8:
+    <<: *default-node
+    volumes:
+      - "$STORAGE_DIR/nodes/8/:/var/lib/gridlock/node"

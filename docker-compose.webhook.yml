@@ -1,0 +1,30 @@
+# Webhook server for triggering deployments from GitHub Action CD workflows
+# Sidecar for the deployment environment
+# Although always deployed together, this must be a separate compose
+# file to avoid `docker-compose up` which is run by the webhook server
+# from potentially restarting the webhook server itself.
+
+version: "3.7"
+services:
+  webhook:
+    restart: always
+    build:
+      context: webhook
+      args:
+        - WEBHOOK_SECRET
+        - DOCKER_PASSWORD
+    volumes:
+      - .:/app
+      - /home/ubuntu/.ssh/id_rsa:/root/.ssh/id_rsa
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - mvp_default
+    labels:
+      traefik.enable: true
+      traefik.http.routers.webhook.rule: Host(`$DOMAIN`) && PathPrefix(`/hooks/`)
+      traefik.http.routers.webhook.tls.certresolver: myhttpchallenge
+      traefik.http.services.webhook.loadbalancer.server.port: 9000
+
+networks:
+  mvp_default:
+    external: true

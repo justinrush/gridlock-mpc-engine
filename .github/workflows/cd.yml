@@ -1,0 +1,110 @@
+# see <README_CD.md> for further documentation
+
+on:
+  push:
+    branches:
+      - master
+      - staging
+
+name: Continuous Delivery
+
+jobs:
+  server-node:
+    name: Server guardian node
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('Cargo.lock') }}
+
+      - name: Build backend
+        uses: dtolnay/rust-toolchain@stable
+      - run: cargo build --release --locked --bins
+
+      - name: Prepare branch name
+        id: branch_name
+        uses: actions/github-script@v3
+        with:
+          script: return context.ref.replace(/refs\/heads\//, "")
+          result-encoding: string
+
+      - name: Build guardian node image
+        env:
+          BRANCH: ${{ steps.branch_name.outputs.result }}
+        run: |
+          source .github/scripts/node-version-env.sh
+          docker build \
+            -t ghcr.io/gridlocknetwork/mvp/app:$BRANCH \
+            -t ghcr.io/gridlocknetwork/mvp/app:$NODE_VERSION \
+            -t ghcr.io/gridlocknetwork/mvp/app:latest \
+            -t ghcr.io/gridlocknetwork/mvp/app:staging-$NODE_VERSION \
+            -t ghcr.io/gridlocknetwork/mvp/partner-node:$BRANCH \
+            -t ghcr.io/gridlocknetwork/mvp/partner-node:$NODE_VERSION \
+            -t ghcr.io/gridlocknetwork/mvp/partner-node:latest \
+            -t ghcr.io/gridlocknetwork/mvp/partner-node:staging-$NODE_VERSION \
+            --build-arg VERSION=$NODE_VERSION \
+            --build-arg PROFILE=release \
+            --build-arg BIN=guardian-node .
+
+      - name: Build key-info image
+        env:
+          BRANCH: ${{ steps.branch_name.outputs.result }}
+        run: |
+          docker build \
+            -t ghcr.io/gridlocknetwork/key-info:$BRANCH \
+            --build-arg PROFILE=release \
+            --build-arg BIN=key-info .
+
+      - name: Build message logging image
+        env:
+          BRANCH: ${{ steps.branch_name.outputs.result }}
+        run: |
+          docker build \
+            -t ghcr.io/gridlocknetwork/message-logging:$BRANCH \
+            --build-arg PROFILE=release \
+            --build-arg BIN=message-logging .
+
+      - name: Push images
+        env:
+          BRANCH: ${{ steps.branch_name.outputs.result }}
+          DOCKER_USERNAME: gridlocknetwork
+          DOCKER_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          source .github/scripts/node-version-env.sh
+          docker login ghcr.io -u "$DOCKER_USERNAME" --password "$DOCKER_PASSWORD"
+          docker push ghcr.io/gridlocknetwork/mvp/app:$BRANCH
+          docker push ghcr.io/gridlocknetwork/mvp/partner-node:$BRANCH
+          docker push ghcr.io/gridlocknetwork/message-logging:$BRANCH
+          if [ "$BRANCH" == 'master' ] ;
+          then
+            docker push ghcr.io/gridlocknetwork/mvp/partner-node:$NODE_VERSION ;
+            docker push ghcr.io/gridlocknetwork/mvp/partner-node:latest ;
+            docker push ghcr.io/gridlocknetwork/mvp/app:$NODE_VERSION ;
+            docker push ghcr.io/gridlocknetwork/mvp/app:latest ;
+          fi
+          if [ "$BRANCH" == 'staging' ] ;
+          then
+            docker push ghcr.io/gridlocknetwork/mvp/app:staging-$NODE_VERSION ;
+            docker push ghcr.io/gridlocknetwork/mvp/partner-node:staging-$NODE_VERSION ;
+          fi
+
+      - name: Deploy
+        env:
+          BRANCH: ${{ steps.branch_name.outputs.result }}
+          DEPLOY_HOOK: ${{ secrets[format('HOOK_{0}', steps.branch_name.outputs.result)] }}
+          DISCORD_HOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        if: env.DEPLOY_HOOK
+        run: .github/scripts/deploy.sh
+
+  user-node:
+    name: Mobile platform guardian node
+    uses: ./.github/workflows/mobile-build.yml
+    with:
+      publish_artifacts: true

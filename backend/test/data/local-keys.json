@@ -1,0 +1,35 @@
+{
+  "7a48540c-a1e3-4f22-a9fd-68c01b9d91cc": {
+    "key_type": "EdDSA",
+    "public_key": "004310686a18a7cd71db952e0224d729925875c2f857067538d88bf36b2f707d",
+    "node_to_share_indices": [
+      [1, 1],
+      [2, 2],
+      [3, 3],
+      [4, 4],
+      [5, 5]
+    ]
+  },
+  "85d93c02-3b7e-4689-89dd-257a453c5ced": {
+    "key_type": "TwoFA",
+    "public_key": "NA",
+    "node_to_share_indices": [
+      [1, 0],
+      [2, 1],
+      [3, 2],
+      [4, 3],
+      [5, 4]
+    ]
+  },
+  "b549c9df-c6e1-42b8-a16f-e4f05ab82e14": {
+    "key_type": "ECDSA",
+    "public_key": "4e1af24ac3f7682119694a075e21828460f34864e8b97561f2831c415b09b0895abc3edf96635aa5ded05b2fbadc07d29b058d9396963425daa3e73aea7560fb",
+    "node_to_share_indices": [
+      [4, 1],
+      [3, 2],
+      [5, 3],
+      [1, 4],
+      [2, 5]
+    ]
+  }
+}

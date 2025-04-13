@@ -1,0 +1,19 @@
+[workspace]
+members = [
+  "backend/node",
+  "backend/message-logging",
+  "backend/server-node",
+  "backend/user-node",
+  "backend/test",
+  "backend/key-info",
+  "backend/shared",
+]
+resolver = "2"
+
+[patch.crates-io.curv-kzen]
+branch = "patch-0.9.0"
+git = "https://github.com/GridlockNetwork/curv"
+
+[patch."https://github.com/ZenGo-X/multi-party-eddsa".multi-party-eddsa]
+branch = "patch-0.3.0"
+git = "https://github.com/GridlockNetwork/multi-party-eddsa"

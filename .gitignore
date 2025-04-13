@@ -1,0 +1,8 @@
+.DS_Store
+.idea/
+target
+.env
+client/ios/App/ios-libs
+nodes/
+node/
+

@@ -1,0 +1,68 @@
+version: "3.7"
+
+x-default-node: &default-node
+  restart: always
+  depends_on:
+    - nats
+  environment:
+    NODE_DB: $NODE_DB
+    RUST_BACKTRACE: "full"
+
+services:
+  nats:
+    restart: always
+    image: nats
+    command: "-c /etc/nats/nats.cfg"
+    volumes:
+      - "$STORAGE_DIR/nats:/etc/nats"
+    ports:
+      - "4222:4222"
+
+  traefik:
+    restart: always
+    image: traefik:latest
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - $STORAGE_DIR/acme:/acme/
+    ports:
+      - "$HTTP_PORT:$HTTP_PORT"
+      - "$HTTPS_PORT:$HTTPS_PORT"
+    command:
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network=mvp_default"
+      - "--entrypoints.web_insecure.address=:$HTTP_PORT"
+      - "--entrypoints.web.address=:$HTTPS_PORT"
+      - "--certificatesresolvers.myhttpchallenge.acme.httpchallenge=true"
+      - "--certificatesresolvers.myhttpchallenge.acme.httpchallenge.entrypoint=web_insecure"
+      - "--certificatesresolvers.myhttpchallenge.acme.storage=/acme/acme.json"
+
+  node1:
+    <<: *default-node
+    volumes:
+      - "$STORAGE_DIR/nodes/1/:/var/lib/gridlock/node"
+
+  node2:
+    <<: *default-node
+    volumes:
+      - "$STORAGE_DIR/nodes/2/:/var/lib/gridlock/node"
+
+  node3:
+    <<: *default-node
+    volumes:
+      - "$STORAGE_DIR/nodes/3/:/var/lib/gridlock/node"
+
+  node4:
+    <<: *default-node
+    volumes:
+      - "$STORAGE_DIR/nodes/4/:/var/lib/gridlock/node"
+
+  node5:
+    <<: *default-node
+    volumes:
+      - "$STORAGE_DIR/nodes/5/:/var/lib/gridlock/node"
+
+  node6:
+    <<: *default-node
+    volumes:
+      - "$STORAGE_DIR/nodes/6/:/var/lib/gridlock/node"

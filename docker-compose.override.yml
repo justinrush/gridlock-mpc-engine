@@ -1,0 +1,45 @@
+version: "3.7"
+
+x-default-node: &default-node
+  image: node
+
+services:
+  node1:
+    <<: *default-node
+
+  node2:
+    <<: *default-node
+
+  node3:
+    <<: *default-node
+
+  node4:
+    <<: *default-node
+
+  node5:
+    <<: *default-node
+
+  node6:
+    <<: *default-node
+
+  message-logging:
+    restart: always
+    command: message-logging
+    volumes:
+      - "$STORAGE_DIR/message-logging/:/var/log/gridlock"
+    depends_on:
+      - nats
+    image: message-logging
+
+  key-info:
+    image: key-info
+    depends_on:
+      - nats
+
+  mongodb:
+    image: mongo
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: user
+      MONGO_INITDB_ROOT_PASSWORD: password

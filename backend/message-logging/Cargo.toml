@@ -1,0 +1,18 @@
+[package]
+name = "message-logging"
+version = "0.1.0"
+authors = ["Gridlock Devs <devs@gridlock.network"]
+edition = "2021"
+
+[[bin]]
+name = "message-logging"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = "1.0.58"
+chrono = { version = "0.4" }
+nats = "0.24.0"
+rust-s3 = "0.26.3"
+signal-hook = "0.2.3"
+log4rs = "1.0.0"
+log = "0.4.14"

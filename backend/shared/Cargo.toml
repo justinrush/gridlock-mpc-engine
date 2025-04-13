@@ -1,0 +1,15 @@
+[package]
+name = "shared"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+path = "src/lib.rs"
+crate-type = ["lib"]
+
+[dependencies]
+kzen-paillier = { version = "=0.4.2" }
+serde = { version = "1.0.193", features = ["derive"] }
+uuid = { version = "0.8.0", features = ["v4", "serde"] }
+derive_more = "0.99.17"
+anyhow = "1.0.75"

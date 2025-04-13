@@ -1,0 +1,7 @@
+version: "3.7"
+
+services:
+  node1:
+    image: ghcr.io/gridlocknetwork/mvp/app:master
+    environment:
+      RUST_BACKTRACE: "true"
